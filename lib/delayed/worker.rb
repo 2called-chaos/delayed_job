@@ -226,9 +226,11 @@ module Delayed
     end
 
     def run(job)
+      ActiveRecord::Base.logger = Delayed::Worker.logger
       job_say job, 'RUNNING'
       runtime = Benchmark.realtime do
         Timeout.timeout(max_run_time(job).to_i, WorkerTimeout) { job.invoke_job }
+        job_say job, 'ABOUT TO DELETE'
         job.destroy
       end
       job_say job, format('COMPLETED after %.4f', runtime)
@@ -239,6 +241,8 @@ module Delayed
       job.error = error
       failed(job)
     rescue Exception => error # rubocop:disable RescueException
+      job_say job, "#{error.class}:#{error.message}"
+      error.backtrace.each{|l| job_say job, l }
       self.class.lifecycle.run_callbacks(:error, self, job) { handle_failed_job(job, error) }
       return false # work failed
     end
