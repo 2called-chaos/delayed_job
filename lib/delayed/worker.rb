@@ -230,8 +230,9 @@ module Delayed
       job_say job, 'RUNNING'
       runtime = Benchmark.realtime do
         Timeout.timeout(max_run_time(job).to_i, WorkerTimeout) { job.invoke_job }
-        job_say job, 'ABOUT TO DELETE'
-        job_say job, "#{job.delete.inspect}"
+        job_say job, 'ABOUT TO DELETE (in 2 seconds)'
+        sleep 2
+        job_say job, "#{job.destroy.inspect}"
         job_say job, 'AFTER DELETE'
       end
       job_say job, format('COMPLETED after %.4f', runtime)
