@@ -75,17 +75,30 @@ module Delayed
       end
 
       def invoke_job
+        Delayed::Worker.logger.debug("around-hooks-before")
         Delayed::Worker.lifecycle.run_callbacks(:invoke_job, self) do
           begin
+            Delayed::Worker.logger.debug("before-hooks-before")
             hook :before
+            Delayed::Worker.logger.debug("before-hooks-after")
+            Delayed::Worker.logger.debug("actually before-payload")
             payload_object.perform
+            Delayed::Worker.logger.debug("actually after-payload")
+            Delayed::Worker.logger.debug("success-hooks-before")
             hook :success
+            Delayed::Worker.logger.debug("success-hooks-after")
           rescue Exception => e # rubocop:disable RescueException
+            Delayed::Worker.logger.debug("error-hooks-before")
             hook :error, e
+            Delayed::Worker.logger.debug("error-hooks-after")
             raise e
           ensure
+            Delayed::Worker.logger.debug("after-hooks-before")
             hook :after
+            Delayed::Worker.logger.debug("after-hooks-before")
           end
+        end.tap do
+          Delayed::Worker.logger.debug("around-hooks-after")
         end
       end
 
