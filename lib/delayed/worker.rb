@@ -232,9 +232,9 @@ module Delayed
         Timeout.timeout(max_run_time(job).to_i, WorkerTimeout) { job.invoke_job }
         job_say job, 'ABOUT TO DELETE (in 2 seconds)'
         sleep 2
-        job_say job, 'just kidding we load a task first'
-        Delayed::Job.find(job.id)
-        job_say job, 'okay now deleting'
+        # job_say job, 'just kidding we load a task first'
+        # Delayed::Job.find(job.id)
+        # job_say job, 'okay now deleting'
 
         job_say job, "#{job.destroy.inspect}"
         job_say job, 'AFTER DELETE'
